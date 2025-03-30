@@ -9,9 +9,10 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/swaggo/gin-swagger"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/swaggo/gin-swagger/swaggerFiles"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/pprof"
 )
 
@@ -22,6 +23,17 @@ func SetupRouter(mode string) *gin.Engine {
 	}
 	//初始化 gin Engine  新建一个没有任何默认中间件的路由
 	r := gin.New()
+
+	// 配置 CORS
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept", "X-Requested-With"},
+		ExposeHeaders:    []string{"Content-Length", "Access-Control-Allow-Origin"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
+
 	//设置中间件
 	r.Use(logger.GinLogger(),
 		logger.GinRecovery(true),                           // Recovery 中间件会 recover掉项目可能出现的panic，并使用zap记录相关日志
