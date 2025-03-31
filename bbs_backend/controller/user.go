@@ -76,7 +76,11 @@ func LoginHandler(c *gin.Context) {
 			ResponseError(c, CodeUserNotExist)
 			return
 		}
-		ResponseError(c, CodeInvalidParams)
+		if err.Error() == mysql.ErrorPasswordWrong {
+			ResponseError(c, CodeInvalidPassword)
+			return
+		}
+		ResponseError(c, CodeServerBusy)
 		return
 	}
 	// 3、返回响应
