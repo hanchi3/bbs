@@ -14,16 +14,17 @@ type Post struct {
 	Status      int32     `json:"status" db:"status"`
 	Title       string    `json:"title" db:"title" binding:"required"`
 	Content     string    `json:"content" db:"content" binding:"required"`
-	CreateTime  time.Time `json:"-" db:"create_time"`
+	CreateTime  time.Time `json:"create_time" db:"create_time"`
 	UpdateTime  time.Time `json:"-" db:"update_time"`
 }
 
 // UnmarshalJSON 为Post类型实现自定义的UnmarshalJSON方法
 func (p *Post) UnmarshalJSON(data []byte) (err error) {
 	required := struct {
-		Title       string `json:"title" db:"title"`
-		Content     string `json:"content" db:"content"`
-		CommunityID int64  `json:"community_id" db:"community_id"`
+		Title       string    `json:"title" db:"title"`
+		Content     string    `json:"content" db:"content"`
+		CommunityID int64     `json:"community_id" db:"community_id"`
+		CreateTime  time.Time `json:"create_time" db:"create_time"`
 	}{}
 	err = json.Unmarshal(data, &required)
 	if err != nil {
@@ -38,6 +39,7 @@ func (p *Post) UnmarshalJSON(data []byte) (err error) {
 		p.Title = required.Title
 		p.Content = required.Content
 		p.CommunityID = uint64(required.CommunityID)
+		p.CreateTime = required.CreateTime
 	}
 	return
 }
