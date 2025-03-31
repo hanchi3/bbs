@@ -86,24 +86,17 @@ func VoteForPost(userID string, postID string, v float64) (err error) {
 		})
 	}
 	// 4、更新帖子的投票数
-	pipeline.HIncrBy(KeyPostInfoHashPrefix+postID, "votes", int64(op))
-
-	//switch math.Abs(ov) - math.Abs(v) {
-	//case 1:
-	//	// 取消投票 ov=1/-1 v=0
-	//	// 投票数-1
-	//	pipeline.HIncrBy(KeyPostInfoHashPrefix+postID, "votes", -1)
-	//case 0:
-	//	// 反转投票 ov=-1/1 v=1/-1
-	//	// 投票数不用更新
-	//case -1:
-	//	// 新增投票 ov=0 v=1/-1
-	//	// 投票数+1
-	//	pipeline.HIncrBy(KeyPostInfoHashPrefix+postID, "votes", 1)
-	//default:
-	//	// 已经投过票了
-	//	return ErrorVoted
-	//}
+	if v == 0 {
+		// 取消投票时，需要根据之前的投票方向来决定是加1还是减1
+		if ov > 0 {
+			pipeline.HIncrBy(KeyPostInfoHashPrefix+postID, "votes", -1)
+		} else if ov < 0 {
+			pipeline.HIncrBy(KeyPostInfoHashPrefix+postID, "votes", 1)
+		}
+	} else {
+		// 投赞成票或反对票时，根据投票差值更新票数
+		pipeline.HIncrBy(KeyPostInfoHashPrefix+postID, "votes", int64(v-ov))
+	}
 	_, err = pipeline.Exec()
 	return err
 }
