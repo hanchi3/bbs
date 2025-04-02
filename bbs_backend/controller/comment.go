@@ -5,6 +5,7 @@ import (
 	"bluebell_backend/models"
 	"bluebell_backend/pkg/snowflake"
 	"fmt"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -48,15 +49,24 @@ func CommentHandler(c *gin.Context) {
 
 // CommentListHandler 评论列表
 func CommentListHandler(c *gin.Context) {
-	ids, ok := c.GetQueryArray("ids")
-	if !ok {
+	// 获取帖子ID
+	postIDStr := c.Query("post_id")
+	if postIDStr == "" {
 		ResponseError(c, CodeInvalidParams)
 		return
 	}
-	posts, err := mysql.GetCommentListByIDs(ids)
+	postID, err := strconv.ParseUint(postIDStr, 10, 64)
 	if err != nil {
+		ResponseError(c, CodeInvalidParams)
+		return
+	}
+
+	// 获取帖子下的所有评论
+	comments, err := mysql.GetCommentListByPostID(postID)
+	if err != nil {
+		zap.L().Error("mysql.GetCommentListByPostID failed", zap.Error(err))
 		ResponseError(c, CodeServerBusy)
 		return
 	}
-	ResponseSuccess(c, posts)
+	ResponseSuccess(c, comments)
 }

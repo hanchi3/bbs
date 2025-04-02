@@ -36,3 +36,16 @@ func GetCommentListByIDs(ids []string) (commentList []*models.Comment, err error
 	err = db.Select(&commentList, query, args...)
 	return
 }
+
+func GetCommentListByPostID(postID uint64) (commentList []*models.Comment, err error) {
+	sqlStr := `select comment_id, content, post_id, author_id, parent_id, create_time
+	from comment
+	where post_id = ?
+	order by create_time desc`
+	err = db.Select(&commentList, sqlStr, postID)
+	if err != nil {
+		zap.L().Error("query comment list failed", zap.Error(err))
+		return nil, err
+	}
+	return
+}
